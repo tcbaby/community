@@ -1,0 +1,47 @@
+server:
+  port: 80
+  servlet:
+    context-path: /community
+
+spring:
+  application:
+    name: community
+  datasource:
+    username: root
+    password: Tan12345
+    url: jdbc:mysql://ali:3306/community
+  thymeleaf:
+    cache: false
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
+  redis:
+    host: ali
+    database: 3
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.tcbaby.community.pojo
+  configuration:
+    use-generated-keys: true
+    map-underscore-to-camel-case: true
+
+# community
+community:
+  domain: http://localhost/community
+  upload:
+    path: D:/Downloads/cache/temp/upload-file/
+  sensitive-words-file: sensitive-words.txt
+  jwt:
+    secret: community@login # 公私钥 的 密码
+    pubKeyPath: D:\\workspace\\java\\community\\src\\main\\resources\\rsa\\rsa
+    priKeyPath: D:\\workspace\\java\\community\\src\\main\\resources\\rsa\\rsa.pub
+    expire: 30          # 设置token的有效时间 单位分钟
+    cookieName: TOKEN
