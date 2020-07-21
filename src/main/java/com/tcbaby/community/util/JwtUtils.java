@@ -1,116 +1,62 @@
 package com.tcbaby.community.util;
 
-import com.tcbaby.community.pojo.User;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
-import java.security.PrivateKey;
-import java.security.PublicKey;
-
-
+/**
+ * @author tcb
+ * @date 2020/7/21
+ */
 public class JwtUtils {
+
+    /** 加密算法 */
+    private static final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+
     /**
-     * 私钥加密token
-     *
-     * @param user      载荷中的数据
-     * @param privateKey    私钥
-     * @param expireMinutes 过期时间，单位秒
+     * 生成token
+     * @param userInfo 用户信息
+     * @param secret 密钥
+     * @param expireMinutes 有效分钟数
      * @return
-     * @throws Exception
      */
-    public static String generateToken(User user, PrivateKey privateKey, int expireMinutes) throws Exception {
+    public static String generateToken(UserInfo userInfo, String secret, int expireMinutes) {
         return Jwts.builder()
-                .claim(JwtConstans.JWT_KEY_ID, user.getId())
-                .claim(JwtConstans.JWT_KEY_USER_NAME, user.getUsername())
+                .claim(JwtConstans.JWT_KEY_ID, userInfo.getId())
+                .claim(JwtConstans.JWT_KEY_USERNAME, userInfo.getUsername())
                 .setExpiration(DateTime.now().plusMinutes(expireMinutes).toDate())
-                .signWith(SignatureAlgorithm.RS256, privateKey)
+                .signWith(signatureAlgorithm, secret)
                 .compact();
     }
 
     /**
-     * 私钥加密token
-     *
-     * @param user      载荷中的数据
-     * @param privateKey    私钥字节数组
-     * @param expireMinutes 过期时间，单位秒
+     * 解析token
+     * @param token
+     * @param secret
      * @return
-     * @throws Exception
      */
-    public static String generateToken(User user, byte[] privateKey, int expireMinutes) throws Exception {
-        return Jwts.builder()
-                .claim(JwtConstans.JWT_KEY_ID, user.getId())
-                .claim(JwtConstans.JWT_KEY_USER_NAME, user.getUsername())
-                .setExpiration(DateTime.now().plusMinutes(expireMinutes).toDate())
-                .signWith(SignatureAlgorithm.RS256, RsaUtils.getPrivateKey(privateKey))
-                .compact();
-    }
-
-    /**
-     * 公钥解析token
-     *
-     * @param token     用户请求中的token
-     * @param publicKey 公钥
-     * @return
-     * @throws Exception
-     */
-    private static Jws<Claims> parserToken(String token, PublicKey publicKey) {
-        return Jwts.parser().setSigningKey(publicKey).parseClaimsJws(token);
-    }
-
-    /**
-     * 公钥解析token
-     *
-     * @param token     用户请求中的token
-     * @param publicKey 公钥字节数组
-     * @return
-     * @throws Exception
-     */
-    private static Jws<Claims> parserToken(String token, byte[] publicKey) throws Exception {
-        return Jwts.parser().setSigningKey(RsaUtils.getPublicKey(publicKey))
-                .parseClaimsJws(token);
+    private static Claims parserToken(String token, String secret) {
+        return Jwts.parser()
+                .setSigningKey(secret)
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     /**
      * 获取token中的用户信息
-     *
-     * @param token     用户请求中的令牌
-     * @param publicKey 公钥
-     * @return 用户信息
-     * @throws Exception
+     * @param token
+     * @param secret
+     * @return
      */
-    public static User getInfoFromToken(String token, PublicKey publicKey) throws Exception {
-        if (StringUtils.isBlank(token)) {
-            return null;
+    public static UserInfo getInfoFromToken(String token, String secret) {
+        if (StringUtils.isNotBlank(token)) {
+            Claims body = parserToken(token, secret);
+            return new UserInfo()
+                    .setId(Integer.valueOf(body.get(JwtConstans.JWT_KEY_ID).toString()))
+                    .setUsername(body.get(JwtConstans.JWT_KEY_USERNAME).toString());
         }
-        Jws<Claims> claimsJws = parserToken(token, publicKey);
-        Claims body = claimsJws.getBody();
-        User user = new User();
-        user.setId(Integer.valueOf(body.get(JwtConstans.JWT_KEY_ID).toString()));
-        user.setUsername(body.get(JwtConstans.JWT_KEY_USER_NAME).toString());
-        return user;
-    }
-
-    /**
-     * 获取token中的用户信息
-     *
-     * @param token     用户请求中的令牌
-     * @param publicKey 公钥
-     * @return 用户信息
-     * @throws Exception
-     */
-    public static User getInfoFromToken(String token, byte[] publicKey) throws Exception {
-        if (StringUtils.isBlank(token)) {
-            return null;
-        }
-        Jws<Claims> claimsJws = parserToken(token, publicKey);
-        Claims body = claimsJws.getBody();
-        User user = new User();
-        user.setId(Integer.valueOf(body.get(JwtConstans.JWT_KEY_ID).toString()));
-        user.setUsername(body.get(JwtConstans.JWT_KEY_ID).toString());
-        return user;
+        return null;
     }
 }

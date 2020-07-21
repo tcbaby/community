@@ -113,12 +113,13 @@ public class LoginController {
             model.addAttribute("verifycodeMsg", "验证码不正确！");
             return "site/login";
         }
-        int expire = remember ? CommunityConstant.MAX_EXPIRE_SECONDS : CommunityConstant.MIN_EXPIRE_SECONDS;
+        int expire = jwtProperties.getExpire(remember);
         Map<String, String> map = userService.login(user);
         model.addAllAttributes(map);
         if (map == null || map.size() == 0) {
             // 设置token
-            String token = JwtUtils.generateToken(user, jwtProperties.getPrivateKey(), expire);
+            UserInfo userInfo = new UserInfo(user.getId(), user.getUsername());
+            String token = JwtUtils.generateToken(userInfo, jwtProperties.getSecret(), expire);
             CookieUtil.addCookie(response, jwtProperties.getCookieName(), token, expire);
             return "redirect:/";
         }

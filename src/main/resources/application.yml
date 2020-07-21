@@ -1,5 +1,5 @@
 server:
-  port: 80
+  port: 8086
   servlet:
     context-path: /community
 
@@ -40,8 +40,10 @@ community:
     path: D:/Downloads/cache/temp/upload-file/
   sensitive-words-file: sensitive-words.txt
   jwt:
-    secret: community@login # 公私钥 的 密码
-    pubKeyPath: D:\\workspace\\java\\community\\src\\main\\resources\\rsa\\rsa
-    priKeyPath: D:\\workspace\\java\\community\\src\\main\\resources\\rsa\\rsa.pub
-    expire: 30          # 设置token的有效时间 单位分钟
+    # 密钥
+    secret: yYa9nVFPXB6uFhlhU99Il32O1U5GFTSF
+    expire: 30
     cookieName: TOKEN
+    # 有效时间 （单位分钟）   30分钟 -- 7天
+    min_expire_minutes: 30
+    max_expire_minutes: 10080

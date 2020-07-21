@@ -7,6 +7,7 @@ import com.tcbaby.community.service.MessageService;
 import com.tcbaby.community.service.UserService;
 import com.tcbaby.community.util.CookieUtil;
 import com.tcbaby.community.util.JwtUtils;
+import com.tcbaby.community.util.UserInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -38,9 +39,9 @@ public class AuthInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 认证用户信息
         String token = CookieUtil.getCookie(request, jwtProperties.getCookieName());
-        User user = JwtUtils.getInfoFromToken(token, jwtProperties.getPublicKey());
-        if (user != null) {
-            HostHolder.setUser(userService.queryUserById(user.getId()));
+        UserInfo userInfo = JwtUtils.getInfoFromToken(token, jwtProperties.getSecret());
+        if (userInfo != null) {
+            HostHolder.setUser(userService.queryUserById(userInfo.getId()));
         }
         // 解析后直接放行，不做拦截处理
         return true;
